@@ -1,6 +1,6 @@
 const mainKeys = [
   [
-    { code: "Esc", label: "Esc", type: "s" },
+    { code: "Escape", label: "Esc", type: "s" },
     { code: "F1", label: "F1", type: "s" },
     { code: "F2", label: "F2", type: "s" },
     { code: "F3", label: "F3", type: "s" },
@@ -116,6 +116,9 @@ const mainKeys = [
   ]
 ];
 
+let capsLocked = false;
+let shiftPressed = false;
+
 const createElementWithClass = (el, ...classes) => {
   const newEl = document.createElement(el);
   newEl.classList.add(...classes);
@@ -176,6 +179,7 @@ mainKeys.forEach(row => {
 document.body.append(keyboard);
 
 document.addEventListener("keydown", e => {
+  e.preventDefault();
   //change language (save on change)
   if (e.code === "MetaLeft") {
     keyboard.classList.toggle("en");
@@ -186,31 +190,59 @@ document.addEventListener("keydown", e => {
     );
   }
 
-  // register upper
+  // register toggle
   if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+    shiftPressed = true;
     keyboard.classList.toggle("upper");
     keyboard.classList.toggle("lower");
   }
 
-  // CapsLogck
+  // CapsLock
   if (e.code === "CapsLock") {
+    const capsKey = keyboard.querySelector("#CapsLock");
+    if (!capsLocked) {
+      capsKey.classList.add("key-lock");
+      capsLocked = true;
+    } else {
+      capsKey.classList.remove("key-lock");
+      capsLocked = false;
+    }
     keyboard.classList.toggle("upper");
     keyboard.classList.toggle("lower");
   }
 
   const key = keyboard.querySelector(`#${e.code}`);
-  // e.preventDefault();
+  if (!key) return;
   key.classList.add("key-press");
 });
 
 document.addEventListener("keyup", e => {
   // register lower
-  if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+  if (shiftPressed && (e.code === "ShiftLeft" || e.code === "ShiftRight")) {
+    shiftPressed = false;
     keyboard.classList.toggle("upper");
     keyboard.classList.toggle("lower");
   }
 
   const key = keyboard.querySelector(`#${e.code}`);
+  if (!key) return;
   key.classList.remove("key-press");
 });
 
+window.addEventListener("blur", e => {
+  const keysPressed = keyboard.querySelectorAll(".key-press");
+  if (keysPressed && keysPressed.length) {
+    keysPressed.forEach(key => key.classList.remove("key-press"));
+  }
+  shiftPressed = false;
+});
+
+window.addEventListener("focus", e => {
+  if (capsLocked) {
+    keyboard.classList.add("upper");
+    keyboard.classList.remove("lower");
+  } else {
+    keyboard.classList.remove("upper");
+    keyboard.classList.add("lower");
+  }
+});
