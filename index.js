@@ -116,6 +116,8 @@ const mainKeys = [
   ]
 ];
 
+const crossBrowserCode = code => ({ OSLeft: "MetaLeft" }[code] || code);
+
 let capsLocked = false;
 let shiftPressed = false;
 
@@ -180,8 +182,10 @@ document.body.append(keyboard);
 
 document.addEventListener("keydown", e => {
   e.preventDefault();
+  const code = crossBrowserCode(e.code);
+
   //change language (save on change)
-  if (e.code === "MetaLeft") {
+  if (code === "MetaLeft") {
     keyboard.classList.toggle("en");
     keyboard.classList.toggle("ru");
     localStorage.setItem(
@@ -191,14 +195,14 @@ document.addEventListener("keydown", e => {
   }
 
   // register toggle
-  if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+  if (code === "ShiftLeft" || code === "ShiftRight") {
     shiftPressed = true;
     keyboard.classList.toggle("upper");
     keyboard.classList.toggle("lower");
   }
 
   // CapsLock
-  if (e.code === "CapsLock") {
+  if (code === "CapsLock") {
     const capsKey = keyboard.querySelector("#CapsLock");
     if (!capsLocked) {
       capsKey.classList.add("key-lock");
@@ -211,22 +215,24 @@ document.addEventListener("keydown", e => {
     keyboard.classList.toggle("lower");
   }
 
-  const key = keyboard.querySelector(`#${e.code}`);
-  if (!key) return;
-  key.classList.add("key-press");
+  const keyElement = keyboard.querySelector(`#${code}`);
+  if (!keyElement) return;
+  keyElement.classList.add("key-press");
 });
 
 document.addEventListener("keyup", e => {
+  const code = crossBrowserCode(e.code);
+
   // register lower
-  if (shiftPressed && (e.code === "ShiftLeft" || e.code === "ShiftRight")) {
+  if (shiftPressed && (code === "ShiftLeft" || code === "ShiftRight")) {
     shiftPressed = false;
     keyboard.classList.toggle("upper");
     keyboard.classList.toggle("lower");
   }
 
-  const key = keyboard.querySelector(`#${e.code}`);
-  if (!key) return;
-  key.classList.remove("key-press");
+  const keyElement = keyboard.querySelector(`#${code}`);
+  if (!keyElement) return;
+  keyElement.classList.remove("key-press");
 });
 
 window.addEventListener("blur", e => {
