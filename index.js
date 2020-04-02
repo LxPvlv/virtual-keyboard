@@ -180,39 +180,42 @@ mainKeys.forEach(row => {
 
 document.body.append(keyboard);
 
+const changeLayout = () => {
+  keyboard.classList.toggle("en");
+  keyboard.classList.toggle("ru");
+  localStorage.setItem(
+    "keyboard-lang",
+    localStorage.getItem("keyboard-lang") === "ru" ? "en" : "ru"
+  );
+};
+
+const toggleShift = () => {
+  shiftPressed = !shiftPressed;
+  keyboard.classList.toggle("upper");
+  keyboard.classList.toggle("lower");
+};
+
+const toggleCapsLock = () => {
+  const capsKey = keyboard.querySelector("#CapsLock");
+  capsKey.classList.toggle("key-lock");
+  capsLocked = !capsLocked;
+  toggleShift();
+};
+
 document.addEventListener("keydown", e => {
   e.preventDefault();
   const code = crossBrowserCode(e.code);
 
-  //change language (save on change)
   if (code === "MetaLeft") {
-    keyboard.classList.toggle("en");
-    keyboard.classList.toggle("ru");
-    localStorage.setItem(
-      "keyboard-lang",
-      localStorage.getItem("keyboard-lang") === "ru" ? "en" : "ru"
-    );
+    changeLayout();
   }
 
-  // register toggle
   if (code === "ShiftLeft" || code === "ShiftRight") {
-    shiftPressed = true;
-    keyboard.classList.toggle("upper");
-    keyboard.classList.toggle("lower");
+    toggleShift();
   }
 
-  // CapsLock
   if (code === "CapsLock") {
-    const capsKey = keyboard.querySelector("#CapsLock");
-    if (!capsLocked) {
-      capsKey.classList.add("key-lock");
-      capsLocked = true;
-    } else {
-      capsKey.classList.remove("key-lock");
-      capsLocked = false;
-    }
-    keyboard.classList.toggle("upper");
-    keyboard.classList.toggle("lower");
+    toggleCapsLock();
   }
 
   const keyElement = keyboard.querySelector(`#${code}`);
@@ -223,11 +226,8 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => {
   const code = crossBrowserCode(e.code);
 
-  // register lower
-  if (shiftPressed && (code === "ShiftLeft" || code === "ShiftRight")) {
-    shiftPressed = false;
-    keyboard.classList.toggle("upper");
-    keyboard.classList.toggle("lower");
+  if (code === "ShiftLeft" || code === "ShiftRight") {
+    toggleShift();
   }
 
   const keyElement = keyboard.querySelector(`#${code}`);
