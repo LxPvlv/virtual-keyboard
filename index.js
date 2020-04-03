@@ -279,6 +279,16 @@ const handleUp = code => {
   keyElement.classList.remove("key-press");
 };
 
+const releaseMouseShift = (code, keyElement) => {
+  return function removeListenerHandler() {
+    keyElement.classList.remove("key-lock");
+    handleUp(code);
+
+    document.removeEventListener("mousedown", removeListenerHandler);
+    document.removeEventListener("keydown", removeListenerHandler);
+  };
+};
+
 document.addEventListener("keydown", e => {
   const code = crossBrowserCode(e.code);
   handleDown(code);
@@ -297,14 +307,16 @@ document.addEventListener("mousedown", e => {
     if (shiftPressed.left || shiftPressed.right) return;
     keyElement.classList.add("key-lock");
     handleDown(code);
-    document.addEventListener(
-      "mousedown",
-      e => {
-        keyElement.classList.remove("key-lock");
-        handleUp(code);
-      },
-      { once: true }
-    );
+
+    const removeHandler = releaseMouseShift(code, keyElement);
+
+    document.addEventListener("mousedown", removeHandler, {
+      once: true
+    });
+
+    document.addEventListener("keydown", removeHandler, {
+      once: true
+    });
     return;
   }
 
