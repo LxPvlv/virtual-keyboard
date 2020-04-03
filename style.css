@@ -1,5 +1,16 @@
 body {
   font-size: 16px;
+  margin: 0;
+}
+
+.keyboard-text {
+  width: 100%;
+  height: 20vh;
+  margin: 3px;
+}
+
+.keyboard-text:focus {
+  outline: none;
 }
 
 .keyboard {
@@ -43,59 +54,42 @@ body {
   width: 100%;
   height: 100%;
   text-align: center;
+  user-select: none;
 }
 
-.keyboard .row:first-child .key-container:nth-child(4n + 1) {
+.pict-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.keyboard .row:first-of-type .key-container:nth-child(4n + 1) {
   margin-right: auto;
 }
 
-#Backspace,
-#Tab,
-#CapsLock,
-#Enter,
-#ShiftLeft,
-#ShiftRight,
-#ControlLeft,
-#MetaLeft,
-#AltLeft,
-#AltRight,
-#ControlRight {
-  flex-grow: 1;
-}
-
-#Tab {
+#layout-Tab {
   flex-basis: 5%;
 }
 
-#Backslash::before {
-  padding-top: 0;
-}
-#Backslash {
-  align-self: stretch;
-  flex-grow: 1;
-  flex-basis: 3%;
+#layout-CapsLock {
+  flex-basis: 5%;
 }
 
-#CapsLock {
-  flex-basis: 9%;
+#layout-ShiftLeft {
+  flex-basis: 10%;
 }
 
-#Enter {
-  flex-basis: 9%;
-}
-
-#ShiftLeft {
-  flex-basis: 8%;
-}
-
-#Space {
+#layout-Space {
   flex-basis: 40%;
 }
 
-.key-square .ru-upper,
-.key-square .ru-lower,
-.key-square .en-upper,
-.key-square .en-lower {
+.key-container .ru-upper,
+.key-container .ru-lower,
+.key-container .en-upper,
+.key-container .en-lower {
   display: none;
 }
 

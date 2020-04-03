@@ -37,7 +37,11 @@ const mainKeys = [
     { code: "Home", label: "Home", type: "s" }
   ],
   [
-    { code: "Tab", label: "Tab", type: "r" },
+    {
+      code: "Tab",
+      layout: { ru: ["Tab", "Tab"], en: ["Tab", "Tab"] },
+      type: "r"
+    },
     { code: "KeyQ", layout: { ru: ["Й", "й"], en: ["Q", "q"] }, type: "s" },
     { code: "KeyW", layout: { ru: ["Ц", "ц"], en: ["W", "w"] }, type: "s" },
     { code: "KeyE", layout: { ru: ["У", "у"], en: ["E", "e"] }, type: "s" },
@@ -61,7 +65,7 @@ const mainKeys = [
     {
       code: "Backslash",
       layout: { ru: ["/", "\\"], en: ["|", "\\"] },
-      type: "s"
+      type: "r"
     },
 
     { code: "PageUp", label: "Page<br>Up", type: "s" }
@@ -83,7 +87,11 @@ const mainKeys = [
       type: "s"
     },
     { code: "Quote", layout: { ru: ["Э", "э"], en: ['"', "'"] }, type: "s" },
-    { code: "Enter", label: "Enter", type: "r" },
+    {
+      code: "Enter",
+      layout: { ru: ["Enter", "Enter"], en: ["Enter", "Enter"] },
+      type: "r"
+    },
 
     { code: "PageDown", label: "Page Down", type: "s" }
   ],
@@ -107,7 +115,11 @@ const mainKeys = [
     { code: "ControlLeft", label: "Ctrl", type: "r" },
     { code: "MetaLeft", label: "⊞", type: "r" },
     { code: "AltLeft", label: "Alt", type: "r" },
-    { code: "Space", label: " ", type: "r" },
+    {
+      code: "Space",
+      layout: { ru: ["&nbsp;", "&nbsp;"], en: ["&nbsp;", "&nbsp;"] },
+      type: "r"
+    },
     { code: "AltRight", label: "Alt", type: "r" },
     { code: "ControlRight", label: "Ctrl", type: "r" },
     { code: "ArrowLeft", label: "◄", type: "s" },
@@ -119,7 +131,7 @@ const mainKeys = [
 const crossBrowserCode = code => ({ OSLeft: "MetaLeft" }[code] || code);
 
 let capsLocked = false;
-let shiftPressed = false;
+let shiftPressed = { left: false, right: false };
 
 const createElementWithClass = (el, ...classes) => {
   const newEl = document.createElement(el);
@@ -127,14 +139,16 @@ const createElementWithClass = (el, ...classes) => {
   return newEl;
 };
 
-const addGlyphs = ({ layout, label }) => {
+const addGlyphs = ({ code, layout, label }) => {
   const pictContainer = createElementWithClass("div", "pict-container");
+  pictContainer.setAttribute("id", code);
 
   const fragment = document.createDocumentFragment();
 
   if (layout) {
     Object.keys(layout).forEach(lang => {
       const langElement = createElementWithClass("div", lang);
+      pictContainer.classList.add("printable");
 
       langElement.innerHTML = `
       <span class='${lang}-upper'>${layout[lang][0]}</span>
@@ -160,16 +174,21 @@ const language = localStorage.getItem("keyboard-lang") || "en";
 
 const keyboard = createElementWithClass("div", "keyboard", language, "lower");
 
+const textarea = createElementWithClass("textarea", "keyboard-text");
+textarea.addEventListener("keydown", e => e.preventDefault());
+
+keyboard.append(textarea);
+
 mainKeys.forEach(row => {
   const keyboardRow = createElementWithClass("div", "row");
 
-  row.forEach(({ code, ...rest }) => {
+  row.forEach(({ type, ...rest }) => {
     const keyContainer = createElementWithClass(
       "div",
       "key-container",
-      rest.type === "s" ? "key-square" : "key-rectangle"
+      type === "s" ? "key-square" : "key-rectangle"
     );
-    keyContainer.setAttribute("id", code);
+    type === "r" && keyContainer.setAttribute("id", `layout-${rest.code}`);
 
     keyContainer.append(addGlyphs(rest));
 
@@ -180,6 +199,29 @@ mainKeys.forEach(row => {
 
 document.body.append(keyboard);
 
+const handlerPrintKey = pictContainer => {
+  console.log(pictContainer.id);
+
+  let text;
+  switch (pictContainer.id) {
+    case "Space":
+      text = " ";
+      break;
+    case "Tab":
+      text = "\t";
+      break;
+    case "Enter":
+      text = "\n";
+      break;
+    default:
+      text = pictContainer.innerText;
+  }
+
+  if (pictContainer.classList.contains("printable")) {
+    textarea.value = textarea.value + text;
+  }
+};
+
 const changeLayout = () => {
   keyboard.classList.toggle("en");
   keyboard.classList.toggle("ru");
@@ -189,8 +231,13 @@ const changeLayout = () => {
   );
 };
 
-const toggleShift = () => {
-  shiftPressed = !shiftPressed;
+const toggleShift = (leftRight, on) => {
+  if (!on && !shiftPressed.left && !shiftPressed.right) return;
+  shiftPressed[leftRight] = on;
+
+  if (on && shiftPressed["left"] && shiftPressed["right"]) return;
+  if (!on && (shiftPressed["left"] || shiftPressed["right"])) return;
+
   keyboard.classList.toggle("upper");
   keyboard.classList.toggle("lower");
 };
@@ -199,19 +246,17 @@ const toggleCapsLock = () => {
   const capsKey = keyboard.querySelector("#CapsLock");
   capsKey.classList.toggle("key-lock");
   capsLocked = !capsLocked;
-  toggleShift();
+  keyboard.classList.toggle("upper");
+  keyboard.classList.toggle("lower");
 };
 
-document.addEventListener("keydown", e => {
-  e.preventDefault();
-  const code = crossBrowserCode(e.code);
-
+const handleDown = code => {
   if (code === "MetaLeft") {
     changeLayout();
   }
 
   if (code === "ShiftLeft" || code === "ShiftRight") {
-    toggleShift();
+    toggleShift(code.slice(5).toLowerCase(), true);
   }
 
   if (code === "CapsLock") {
@@ -221,18 +266,59 @@ document.addEventListener("keydown", e => {
   const keyElement = keyboard.querySelector(`#${code}`);
   if (!keyElement) return;
   keyElement.classList.add("key-press");
-});
+  handlerPrintKey(keyElement);
+};
 
-document.addEventListener("keyup", e => {
-  const code = crossBrowserCode(e.code);
-
+const handleUp = code => {
   if (code === "ShiftLeft" || code === "ShiftRight") {
-    toggleShift();
+    toggleShift(code.slice(5).toLowerCase(), false);
   }
 
   const keyElement = keyboard.querySelector(`#${code}`);
   if (!keyElement) return;
   keyElement.classList.remove("key-press");
+};
+
+document.addEventListener("keydown", e => {
+  const code = crossBrowserCode(e.code);
+  handleDown(code);
+});
+
+document.addEventListener("keyup", e => {
+  const code = crossBrowserCode(e.code);
+  handleUp(code);
+});
+
+document.addEventListener("mousedown", e => {
+  const keyElement = e.target;
+
+  const code = keyElement.id;
+  if (code === "ShiftLeft" || code === "ShiftRight") {
+    if (shiftPressed.left || shiftPressed.right) return;
+    keyElement.classList.add("key-lock");
+    handleDown(code);
+    document.addEventListener(
+      "mousedown",
+      e => {
+        keyElement.classList.remove("key-lock");
+        handleUp(code);
+      },
+      { once: true }
+    );
+    return;
+  }
+
+  if (!keyElement.classList.contains("pict-container")) return;
+  keyElement.classList.add("key-press");
+  handleDown(code);
+});
+
+document.addEventListener("mouseup", e => {
+  textarea.focus();
+  const pressedKeys = keyboard.querySelectorAll(".key-press");
+  pressedKeys.forEach(key => {
+    key.classList.remove("key-press");
+  });
 });
 
 window.addEventListener("blur", e => {
@@ -240,7 +326,7 @@ window.addEventListener("blur", e => {
   if (keysPressed && keysPressed.length) {
     keysPressed.forEach(key => key.classList.remove("key-press"));
   }
-  shiftPressed = false;
+  shiftPressed.left = shiftPressed.right = false;
 });
 
 window.addEventListener("focus", e => {
