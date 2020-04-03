@@ -130,8 +130,12 @@ const mainKeys = [
 
 const crossBrowserCode = code => ({ OSLeft: "MetaLeft" }[code] || code);
 
+const language = localStorage.getItem("keyboard-lang") || "en";
+
 let capsLocked = false;
 let shiftPressed = { left: false, right: false };
+
+/* ********* CREATE KEYBOARD ********* */
 
 const createElementWithClass = (el, ...classes) => {
   const newEl = document.createElement(el);
@@ -170,8 +174,6 @@ const addGlyphs = ({ code, layout, label }) => {
   return pictContainer;
 };
 
-const language = localStorage.getItem("keyboard-lang") || "en";
-
 const keyboard = createElementWithClass("div", "keyboard", language, "lower");
 
 const textarea = createElementWithClass("textarea", "keyboard-text");
@@ -199,6 +201,17 @@ mainKeys.forEach(row => {
 
 document.body.append(keyboard);
 
+/* ********* KEY HANDLERS ********* */
+
+const changeLayout = () => {
+  keyboard.classList.toggle("en");
+  keyboard.classList.toggle("ru");
+  localStorage.setItem(
+    "keyboard-lang",
+    localStorage.getItem("keyboard-lang") === "ru" ? "en" : "ru"
+  );
+};
+
 const handlerPrintKey = pictContainer => {
   console.log(pictContainer.id);
 
@@ -222,15 +235,6 @@ const handlerPrintKey = pictContainer => {
   }
 };
 
-const changeLayout = () => {
-  keyboard.classList.toggle("en");
-  keyboard.classList.toggle("ru");
-  localStorage.setItem(
-    "keyboard-lang",
-    localStorage.getItem("keyboard-lang") === "ru" ? "en" : "ru"
-  );
-};
-
 const toggleShift = (leftRight, on) => {
   if (!on && !shiftPressed.left && !shiftPressed.right) return;
   shiftPressed[leftRight] = on;
@@ -251,6 +255,7 @@ const toggleCapsLock = () => {
 };
 
 const handleDown = code => {
+  //handle modifier keys
   if (code === "MetaLeft") {
     changeLayout();
   }
@@ -263,6 +268,7 @@ const handleDown = code => {
     toggleCapsLock();
   }
 
+  // handle print keys
   const keyElement = keyboard.querySelector(`#${code}`);
   if (!keyElement) return;
   keyElement.classList.add("key-press");
@@ -288,6 +294,8 @@ const releaseMouseShift = (code, keyElement) => {
     document.removeEventListener("keydown", removeListenerHandler);
   };
 };
+
+/* ********* EVENT LISTENERS ********* */
 
 document.addEventListener("keydown", e => {
   const code = crossBrowserCode(e.code);
