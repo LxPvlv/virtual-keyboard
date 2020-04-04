@@ -275,6 +275,15 @@ const handleRemoveKeys = code => {
 };
 
 const handleDown = code => {
+  // handle print keys
+  const keyElement = keyboard.querySelector(`#${code}`);
+  if (!keyElement) return;
+  keyElement.classList.add("key-press");
+
+  if (keyElement.classList.contains("printable")) {
+    handlerPrintKey(keyElement);
+  }
+
   //handle modifier keys
   if (code === "MetaLeft") {
     changeLayout();
@@ -288,17 +297,29 @@ const handleDown = code => {
     toggleCapsLock();
   }
 
+  //handle navigation keys
+  if (code === "PageUp" || code === "PageDown") {
+    textarea.scrollBy(0, textarea.clientHeight * (code === "PageUp" ? -1 : 1));
+  }
+
+  if (code === "Home" || code === "End") {
+    let { selectionStart, selectionEnd, value } = textarea;
+    if (code === "Home") {
+      const position = value.lastIndexOf("\n", selectionStart - 1);
+      textarea.selectionStart = textarea.selectionEnd =
+        (position === -1 ? 0 : position) + 1;
+    }
+    if (code === "End") {
+      textarea.selectionStart = textarea.selectionEnd = value.indexOf(
+        "\n",
+        selectionStart
+      );
+    }
+  }
+
   //handle remove keys
   if (code === "Backspace" || code === "Delete") {
     handleRemoveKeys(code);
-  }
-
-  // handle print keys
-  const keyElement = keyboard.querySelector(`#${code}`);
-  if (keyElement.classList.contains("printable")) {
-    if (!keyElement) return;
-    keyElement.classList.add("key-press");
-    handlerPrintKey(keyElement);
   }
 };
 
