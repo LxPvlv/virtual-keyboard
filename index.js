@@ -212,29 +212,6 @@ const changeLayout = () => {
   );
 };
 
-const handlerPrintKey = pictContainer => {
-  console.log(pictContainer.id);
-
-  let text;
-  switch (pictContainer.id) {
-    case "Space":
-      text = " ";
-      break;
-    case "Tab":
-      text = "\t";
-      break;
-    case "Enter":
-      text = "\n";
-      break;
-    default:
-      text = pictContainer.innerText;
-  }
-
-  if (pictContainer.classList.contains("printable")) {
-    textarea.value = textarea.value + text;
-  }
-};
-
 const toggleShift = (leftRight, on) => {
   if (!on && !shiftPressed.left && !shiftPressed.right) return;
   shiftPressed[leftRight] = on;
@@ -254,6 +231,49 @@ const toggleCapsLock = () => {
   keyboard.classList.toggle("lower");
 };
 
+const handlerPrintKey = pictContainer => {
+  let text;
+  switch (pictContainer.id) {
+    case "Space":
+      text = " ";
+      break;
+    case "Tab":
+      text = "\t";
+      break;
+    case "Enter":
+      text = "\n";
+      break;
+    default:
+      text = pictContainer.innerText;
+  }
+
+  let { selectionStart, selectionEnd, value } = textarea;
+  const edited =
+    value.slice(0, selectionStart) + text + value.slice(selectionEnd);
+  textarea.value = edited;
+  textarea.selectionStart = selectionStart + 1;
+  textarea.selectionEnd = selectionStart + 1;
+};
+
+const handleRemoveKeys = code => {
+  let { selectionStart, selectionEnd, value } = textarea;
+
+  if (selectionStart === selectionEnd) {
+    switch (code) {
+      case "Backspace":
+        selectionStart && selectionStart--;
+        break;
+      case "Delete":
+        selectionEnd++;
+        break;
+    }
+  }
+  const removed = value.slice(0, selectionStart) + value.slice(selectionEnd);
+  textarea.value = removed;
+  textarea.selectionStart = selectionStart;
+  textarea.selectionEnd = selectionStart;
+};
+
 const handleDown = code => {
   //handle modifier keys
   if (code === "MetaLeft") {
@@ -268,11 +288,18 @@ const handleDown = code => {
     toggleCapsLock();
   }
 
+  //handle remove keys
+  if (code === "Backspace" || code === "Delete") {
+    handleRemoveKeys(code);
+  }
+
   // handle print keys
   const keyElement = keyboard.querySelector(`#${code}`);
-  if (!keyElement) return;
-  keyElement.classList.add("key-press");
-  handlerPrintKey(keyElement);
+  if (keyElement.classList.contains("printable")) {
+    if (!keyElement) return;
+    keyElement.classList.add("key-press");
+    handlerPrintKey(keyElement);
+  }
 };
 
 const handleUp = code => {
