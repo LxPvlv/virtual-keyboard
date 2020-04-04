@@ -274,6 +274,61 @@ const handleRemoveKeys = code => {
   textarea.selectionEnd = selectionStart;
 };
 
+const handleArrowKeys = (code) => {
+
+  let { selectionStart, value } = textarea;
+  let newPosition;
+
+  if (code === "ArrowLeft") {
+    newPosition = selectionStart && selectionStart - 1
+  }
+
+  if (code === "ArrowRight") {
+    newPosition = selectionStart + 1
+  }
+
+  let targetStart
+  if (code === "ArrowUp") {
+    const targetEnd = value.lastIndexOf('\n', selectionStart - 1);
+    if (targetEnd === -1) {
+      newPosition = selectionStart
+    } else {
+      targetStart = value.lastIndexOf('\n', targetEnd - 1);
+      const shift = selectionStart - targetEnd
+      if (shift > targetEnd - targetStart) {
+        newPosition = targetEnd
+      } else {
+        newPosition = targetStart + shift;
+      }
+    }
+  }
+
+  if (code === "ArrowDown") {
+    let shift
+    const targetStart = value.indexOf('\n', selectionStart)
+    if (selectionStart === 0) {
+      shift = 0
+      newPosition = targetStart + 1
+    } else {
+      shift = selectionStart - value.lastIndexOf('\n', selectionStart - 1) + 1
+      if (targetStart === -1) {
+        newPosition = selectionStart
+      } else {
+        let targetEnd = value.indexOf('\n', targetStart + 1)
+        if (targetEnd === -1) targetEnd = value.length
+        targetLength = targetEnd - targetStart
+        if (shift > targetLength) {
+          newPosition = targetEnd
+        } else {
+          newPosition = targetStart + shift - 1
+        }
+      }
+    }
+  }
+
+  textarea.selectionStart = textarea.selectionEnd = newPosition
+}
+
 const handleDown = code => {
   // handle print keys
   const keyElement = keyboard.querySelector(`#${code}`);
@@ -303,11 +358,11 @@ const handleDown = code => {
   }
 
   if (code === "Home" || code === "End") {
-    let { selectionStart, selectionEnd, value } = textarea;
+    let { selectionStart, value } = textarea;
     if (code === "Home") {
       const position = value.lastIndexOf("\n", selectionStart - 1);
       textarea.selectionStart = textarea.selectionEnd =
-        (position === -1 ? 0 : position) + 1;
+        (position === -1 ? 0 : position + 1);
     }
     if (code === "End") {
       textarea.selectionStart = textarea.selectionEnd = value.indexOf(
@@ -315,6 +370,10 @@ const handleDown = code => {
         selectionStart
       );
     }
+  }
+
+  if (code === "ArrowLeft" || code === "ArrowRight" || code === "ArrowUp" || code === "ArrowDown") {
+    handleArrowKeys(code)
   }
 
   //handle remove keys
