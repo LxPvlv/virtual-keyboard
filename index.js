@@ -333,17 +333,29 @@ const handleUp = code => {
   keyElement.classList.remove("key-press");
 };
 
-const releaseMouseShift = (code, keyElement) => {
-  return function removeListenerHandler() {
-    keyElement.classList.remove("key-lock");
-    handleUp(code);
-
-    document.removeEventListener("mousedown", removeListenerHandler);
-    document.removeEventListener("keydown", removeListenerHandler);
-  };
-};
-
 /* ********* EVENT LISTENERS ********* */
+
+const addDropHandlers = (lockedShift, keyElement) => {
+  function dropHandler({ code: dropKeyCode }) {
+    keyElement.classList.remove("key-lock");
+    if (dropKeyCode === 'ShiftLeft' || dropKeyCode === 'ShiftRight') {
+      handleDown(lockedShift)
+    } else {
+      handleUp(lockedShift);
+    }
+
+    document.removeEventListener("mousedown", dropHandler);
+    document.removeEventListener("keydown", dropHandler);
+  };
+
+  document.addEventListener("mousedown", dropHandler, {
+    once: true
+  });
+
+  document.addEventListener("keydown", dropHandler, {
+    once: true
+  });
+};
 
 document.addEventListener("keydown", e => {
   const code = crossBrowserCode(e.code);
@@ -364,15 +376,8 @@ document.addEventListener("mousedown", e => {
     keyElement.classList.add("key-lock");
     handleDown(code);
 
-    const removeHandler = releaseMouseShift(code, keyElement);
+    addDropHandlers(code, keyElement);
 
-    document.addEventListener("mousedown", removeHandler, {
-      once: true
-    });
-
-    document.addEventListener("keydown", removeHandler, {
-      once: true
-    });
     return;
   }
 
