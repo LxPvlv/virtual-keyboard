@@ -1,12 +1,14 @@
 body {
   font-size: 16px;
   margin: 0;
+  overflow-x: hidden;
 }
 
 .keyboard-text {
   width: 100%;
   height: 20vh;
   margin: 3px;
+  white-space: nowrap;
 }
 
 .keyboard-text:focus {
@@ -100,12 +102,26 @@ body {
   display: block;
 }
 
-.key-press {
-  background: black;
-  color: white;
-  transition: color 0.2s, background 0.2s;
+.key-lock {
+  color: #3c803c;
+  box-shadow: 0 0 22px -14px green, inset 0 0 20px -19px green;
 }
 
-.key-lock {
-  box-shadow: inset 0 0 0 1px green;
+.ripple {
+  box-shadow: 0 0 3px rgb(2, 21, 87);
+  transform: scale(1);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 1;
+  animation: rippleDrop 0.1s linear;
+}
+
+@keyframes rippleDrop {
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
 }

@@ -331,9 +331,13 @@ const handleArrowKeys = (code) => {
 
 const handleDown = code => {
   // handle print keys
+  if (!code) return
+
   const keyElement = keyboard.querySelector(`#${code}`);
   if (!keyElement) return;
-  keyElement.classList.add("key-press");
+  const ripple = createElementWithClass('div', 'ripple')
+  ripple.addEventListener('animationend', e => e.target.remove())
+  keyElement.parentElement.prepend(ripple);
 
   if (keyElement.classList.contains("printable")) {
     handlerPrintKey(keyElement);
@@ -386,10 +390,6 @@ const handleUp = code => {
   if (code === "ShiftLeft" || code === "ShiftRight") {
     toggleShift(code.slice(5).toLowerCase(), false);
   }
-
-  const keyElement = keyboard.querySelector(`#${code}`);
-  if (!keyElement) return;
-  keyElement.classList.remove("key-press");
 };
 
 /* ********* EVENT LISTENERS ********* */
@@ -440,24 +440,14 @@ document.addEventListener("mousedown", e => {
     return;
   }
 
-  if (!keyElement.classList.contains("pict-container")) return;
-  keyElement.classList.add("key-press");
   handleDown(code);
 });
 
 document.addEventListener("mouseup", e => {
   textarea.focus();
-  const pressedKeys = keyboard.querySelectorAll(".key-press");
-  pressedKeys.forEach(key => {
-    key.classList.remove("key-press");
-  });
 });
 
 window.addEventListener("blur", e => {
-  const keysPressed = keyboard.querySelectorAll(".key-press");
-  if (keysPressed && keysPressed.length) {
-    keysPressed.forEach(key => key.classList.remove("key-press"));
-  }
   shiftPressed.left = shiftPressed.right = false;
 });
 
