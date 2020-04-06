@@ -430,6 +430,10 @@ const addDropHandlers = (lockedShift, keyElement) => {
 
 document.addEventListener('keydown', (e) => {
   const code = crossBrowserCode(e.code);
+  if ((code === 'ControlLeft' || code === 'AltLeft') && (e.ctrlKey && e.altKey)) {
+    changeLayout();
+  }
+
   handleDown(code);
 });
 
