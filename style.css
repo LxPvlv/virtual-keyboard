@@ -20,6 +20,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  min-width: 842px;
 }
 .row {
   display: flex;
@@ -106,6 +107,10 @@ body {
 .key-lock {
   color: #3c803c;
   box-shadow: 0 0 22px -14px green, inset 0 0 20px -19px green;
+}
+
+.key-highlight {
+  background-color: #e2e4f9;
 }
 
 .ripple {

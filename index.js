@@ -337,6 +337,7 @@ const handleDown = (code) => {
 
   const keyElement = keyboard.querySelector(`#${code}`);
   if (!keyElement) return;
+  keyElement.classList.add('key-highlight');
   const ripple = createElementWithClass('div', 'ripple');
   ripple.addEventListener('animationend', (e) => e.target.remove());
   keyElement.parentElement.prepend(ripple);
@@ -397,6 +398,10 @@ const handleUp = (code) => {
   if (code === 'ShiftLeft' || code === 'ShiftRight') {
     toggleShift(code.slice(5).toLowerCase(), false);
   }
+
+  const keyElement = keyboard.querySelector(`#${code}`);
+  if (!keyElement) return;
+  keyElement.classList.remove('key-highlight');
 };
 
 /* ********* EVENT LISTENERS ********* */
@@ -435,6 +440,7 @@ document.addEventListener('keyup', (e) => {
 
 document.addEventListener('mousedown', (e) => {
   const keyElement = e.target;
+  if (!keyElement.classList.contains('pict-container')) return;
 
   const code = keyElement.id;
   if (code === 'ShiftLeft' || code === 'ShiftRight') {
@@ -447,6 +453,8 @@ document.addEventListener('mousedown', (e) => {
     return;
   }
 
+  keyElement.classList.add('key-highlight');
+
   handleDown(code);
 });
 
@@ -455,11 +463,21 @@ document.addEventListener('mouseup', (e) => {
   if (!(code === 'PageUp' || code === 'PageDown')) {
     textarea.focus();
   }
+
+  const pressedKeys = keyboard.querySelectorAll('.key-highlight');
+  pressedKeys.forEach((key) => {
+    key.classList.remove('key-highlight');
+  });
 });
 
 window.addEventListener('blur', () => {
   shiftPressed.left = false;
   shiftPressed.right = false;
+
+  const keysPressed = keyboard.querySelectorAll('.key-highlight');
+  if (keysPressed && keysPressed.length) {
+    keysPressed.forEach((key) => key.classList.remove('key-highlight'));
+  }
 });
 
 window.addEventListener('focus', () => {
