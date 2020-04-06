@@ -201,6 +201,15 @@ mainKeys.forEach((row) => {
 
 document.body.append(keyboard);
 
+const description = createElementWithClass('div', 'description');
+description.innerHTML = `
+OS Linux<br>
+<kbd>Ctrl-Alt</kbd> или <kbd>⊞</kbd> смена раскладки<br>
+<kbd>Shift</kbd>, нажатый мышкой прилипает
+`;
+
+document.body.append(description);
+
 /* ********* KEY HANDLERS ********* */
 
 const changeLayout = () => {
