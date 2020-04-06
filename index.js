@@ -450,8 +450,11 @@ document.addEventListener('mousedown', (e) => {
   handleDown(code);
 });
 
-document.addEventListener('mouseup', () => {
-  textarea.focus();
+document.addEventListener('mouseup', (e) => {
+  const code = e.target.id;
+  if (!(code === 'PageUp' || code === 'PageDown')) {
+    textarea.focus();
+  }
 });
 
 window.addEventListener('blur', () => {
